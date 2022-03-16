@@ -187,7 +187,9 @@ async function receiveMessages(
   const sbReceiver = sbClient.createReceiver(queueName!!);
 
   try {
-    const receivedMessages = await sbReceiver.receiveMessages(count || 1);
+    const receivedMessages = await sbReceiver.receiveMessages(
+      count ? Number(count) : 1
+    );
     let messages: Array<ReceiveResponseMessage> = [];
     if (receivedMessages)
       messages = receivedMessages.map(
