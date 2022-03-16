@@ -73,18 +73,18 @@ function validateQueueRequest(context: Context, req: HttpRequest): boolean {
       req,
       "'SERVICE_BUS_CONNECTION_STRING' is missing from environment variables!"
     );
-    context.log(errorResponse);
+    context.log(JSON.stringify(errorResponse, undefined, 2));
     context.res = errorResponse;
     return false;
   }
 
   if (!queueName) {
-    const error = createBadRequestResponse(
+    const badRequestResponse = createBadRequestResponse(
       req,
       "Missing 'queueName' from request body!"
     );
-    context.log(error);
-    context.res = error;
+    context.log(JSON.stringify(badRequestResponse, undefined, 2));
+    context.res = badRequestResponse;
     return false;
   }
   if (!messages) {
@@ -92,7 +92,7 @@ function validateQueueRequest(context: Context, req: HttpRequest): boolean {
       req,
       "Missing 'messages' from request body!"
     );
-    context.log(badRequestResponse);
+    context.log(JSON.stringify(badRequestResponse, undefined, 2));
     context.res = badRequestResponse;
     return false;
   }
@@ -101,7 +101,7 @@ function validateQueueRequest(context: Context, req: HttpRequest): boolean {
       req,
       "'messages' is not an array!"
     );
-    context.log(badRequestResponse);
+    context.log(JSON.stringify(badRequestResponse, undefined, 2));
     context.res = badRequestResponse;
     return false;
   }
@@ -118,18 +118,18 @@ function validateReceiveRequest(context: Context, req: HttpRequest): boolean {
       req,
       "'SERVICE_BUS_CONNECTION_STRING' is missing from environment variables!"
     );
-    context.log(errorResponse);
+    context.log(JSON.stringify(errorResponse, undefined, 2));
     context.res = errorResponse;
     return false;
   }
 
   if (!queueName) {
-    const error = createBadRequestResponse(
+    const badRequestResponse = createBadRequestResponse(
       req,
       "Missing 'queueName' from request query!"
     );
-    context.log(error);
-    context.res = error;
+    context.log(JSON.stringify(badRequestResponse, undefined, 2));
+    context.res = badRequestResponse;
     return false;
   }
 
@@ -141,7 +141,7 @@ async function queueMessages(
   req: HttpRequest
 ): Promise<void> {
   const { body, headers, method } = req;
-  context.log("Request:", { method, body });
+  context.log("Request:", { method, body: JSON.stringify(body, undefined, 2) });
 
   if (!validateQueueRequest(context, req)) return;
 
@@ -182,14 +182,14 @@ async function queueMessages(
         request: { body, headers, method },
       },
     };
-    context.log(response);
+    context.log(JSON.stringify(response, undefined, 2));
     context.res = response;
 
     // Close the sender
     await sbSender.close();
   } catch (e) {
     const errorResponse = createErrorResponse(req, String(e));
-    context.log(errorResponse);
+    context.log(JSON.stringify(errorResponse, undefined, 2));
     context.res = errorResponse;
   } finally {
     // Close the client
@@ -226,14 +226,14 @@ async function receiveMessages(
         request: { headers, method, query },
       },
     };
-    context.log(response);
+    context.log(JSON.stringify(response, undefined, 2));
     context.res = response;
 
     // Close the receiver
     await sbReceiver.close();
   } catch (e) {
     const errorResponse = createErrorResponse(req, String(e));
-    context.log(errorResponse);
+    context.log(JSON.stringify(errorResponse, undefined, 2));
     context.res = errorResponse;
   } finally {
     // Close the client
@@ -260,7 +260,7 @@ async function httpTrigger(context: Context, req: HttpRequest): Promise<void> {
           request: { body, headers, method },
         },
       };
-      context.log(response);
+      context.log(JSON.stringify(response, undefined, 2));
       context.res = response;
       break;
   }
