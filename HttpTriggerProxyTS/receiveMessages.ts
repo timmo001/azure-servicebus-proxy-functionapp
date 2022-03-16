@@ -32,7 +32,7 @@ export async function receiveMessages(
   try {
     const receivedMessages = await sbReceiver.receiveMessages(
       count ? Number(count) : 1,
-      { maxWaitTimeInMs: 10000 }
+      { maxWaitTimeInMs: 20000 }
     );
     let messages: Array<ReceiveResponseMessage> = [];
     for (const message of receivedMessages) {
