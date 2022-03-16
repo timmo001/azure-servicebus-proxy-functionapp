@@ -247,6 +247,7 @@ async function httpTrigger(context: Context, req: HttpRequest): Promise<void> {
   switch (method) {
     case "GET":
       await receiveMessages(context, req);
+      break;
     case "POST":
       await queueMessages(context, req);
       break;
