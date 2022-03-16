@@ -1,0 +1,17 @@
+{
+  "queueName": "test",
+  "messages": [
+    {
+      "contentType": "application/json",
+      "body": {
+        "message": "Test 01"
+      }
+    },
+    {
+      "contentType": "application/json",
+      "body": {
+        "message": "Test 02"
+      }
+    }
+  ]
+}
