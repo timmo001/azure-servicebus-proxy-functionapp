@@ -31,51 +31,56 @@ export async function receiveMessages(
 
   try {
     const receivedMessages = await sbReceiver.receiveMessages(
-      count ? Number(count) : 1
+      count ? Number(count) : 1,
+      { maxWaitTimeInMs: 10000 }
     );
     let messages: Array<ReceiveResponseMessage> = [];
-    if (receivedMessages)
-      messages = receivedMessages.map(
-        ({
-          body,
-          contentType,
-          correlationId,
-          deliveryCount,
-          enqueuedSequenceNumber,
-          enqueuedTimeUtc,
-          expiresAtUtc,
-          messageId,
-          partitionKey,
-          replyTo,
-          replyToSessionId,
-          scheduledEnqueueTimeUtc,
-          sequenceNumber,
-          sessionId,
-          state,
-          subject,
-          timeToLive,
-          to,
-        }: ServiceBusReceivedMessage) => ({
-          body,
-          contentType,
-          correlationId,
-          deliveryCount,
-          enqueuedSequenceNumber,
-          enqueuedTimeUtc,
-          expiresAtUtc,
-          messageId,
-          partitionKey,
-          replyTo,
-          replyToSessionId,
-          scheduledEnqueueTimeUtc,
-          sequenceNumber,
-          sessionId,
-          state,
-          subject,
-          timeToLive,
-          to,
-        })
-      );
+    for (const message of receivedMessages) {
+      const {
+        body,
+        contentType,
+        correlationId,
+        deliveryCount,
+        enqueuedSequenceNumber,
+        enqueuedTimeUtc,
+        expiresAtUtc,
+        messageId,
+        partitionKey,
+        replyTo,
+        replyToSessionId,
+        scheduledEnqueueTimeUtc,
+        sequenceNumber,
+        sessionId,
+        state,
+        subject,
+        timeToLive,
+        to,
+      } = message;
+
+      await sbReceiver.completeMessage(message);
+
+      messages.push({
+        body,
+        contentType,
+        correlationId,
+        deliveryCount,
+        enqueuedSequenceNumber,
+        enqueuedTimeUtc,
+        expiresAtUtc,
+        messageId,
+        partitionKey,
+        replyTo,
+        replyToSessionId,
+        scheduledEnqueueTimeUtc,
+        sequenceNumber,
+        sessionId,
+        state,
+        subject,
+        timeToLive,
+        to,
+      });
+    }
+
     context.log("Messages:", messages);
     const response: Response = {
       status: 200,
