@@ -1,38 +1,11 @@
 import { Context, HttpRequest, HttpRequestHeaders } from "@azure/functions";
 import {
   ServiceBusClient,
-  ServiceBusMessage,
   ServiceBusReceivedMessage,
 } from "@azure/service-bus";
 
-interface Response {
-  status: number;
-  headers: HttpRequestHeaders;
-  body: QueueResponseBody | ReceiveResponseBody;
-}
-
-interface QueueResponseBody {
-  status: number;
-  message: string;
-  request: Partial<HttpRequest>;
-}
-
-interface ReceiveResponseBody {
-  status: number;
-  message?: string;
-  messages?: Array<ServiceBusReceivedMessage>;
-  request: Partial<HttpRequest>;
-}
-
-interface ReceiveRequestQuery {
-  count: number;
-  queueName: string;
-}
-
-interface QueueRequestBody {
-  queueName: string;
-  messages: Array<ServiceBusMessage>;
-}
+import { QueueRequestBody, ReceiveRequestQuery } from "./types/request";
+import { Response, ReceiveResponseMessage } from "./types/response";
 
 const DEFAULT_RESPONSE_HEADERS: HttpRequestHeaders = {
   "Content-Type": "application/json",
@@ -182,8 +155,8 @@ async function queueMessages(
         request: { body, headers, method },
       },
     };
-    context.log(JSON.stringify(response, undefined, 2));
     context.res = response;
+    context.log(JSON.stringify(response, undefined, 2));
 
     // Close the sender
     await sbSender.close();
@@ -214,7 +187,51 @@ async function receiveMessages(
   const sbReceiver = sbClient.createReceiver(queueName!!);
 
   try {
-    const messages = await sbReceiver.receiveMessages(count || 1);
+    const receivedMessages = await sbReceiver.receiveMessages(count || 1);
+    let messages: Array<ReceiveResponseMessage> = [];
+    if (receivedMessages)
+      messages = receivedMessages.map(
+        ({
+          body,
+          contentType,
+          correlationId,
+          deliveryCount,
+          enqueuedSequenceNumber,
+          enqueuedTimeUtc,
+          expiresAtUtc,
+          messageId,
+          partitionKey,
+          replyTo,
+          replyToSessionId,
+          scheduledEnqueueTimeUtc,
+          sequenceNumber,
+          sessionId,
+          state,
+          subject,
+          timeToLive,
+          to,
+        }: ServiceBusReceivedMessage) => ({
+          body,
+          contentType,
+          correlationId,
+          deliveryCount,
+          enqueuedSequenceNumber,
+          enqueuedTimeUtc,
+          expiresAtUtc,
+          messageId,
+          partitionKey,
+          replyTo,
+          replyToSessionId,
+          scheduledEnqueueTimeUtc,
+          sequenceNumber,
+          sessionId,
+          state,
+          subject,
+          timeToLive,
+          to,
+        })
+      );
+    context.log("Messages:", messages);
     const response: Response = {
       status: 200,
       headers: {
@@ -226,8 +243,8 @@ async function receiveMessages(
         request: { headers, method, query },
       },
     };
-    context.log(JSON.stringify(response, undefined, 2));
     context.res = response;
+    context.log(JSON.stringify(response, undefined, 2));
 
     // Close the receiver
     await sbReceiver.close();
