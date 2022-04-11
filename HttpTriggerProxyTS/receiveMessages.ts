@@ -25,7 +25,7 @@ export async function receiveMessages(
   const { queueName, count } = query as Partial<ReceiveRequestQuery>;
 
   const sbClient = new ServiceBusClient(
-    process.env.SERVICE_BUS_CONNECTION_STRING as string
+    process.env.SERVICEBUS_CONNECTION_STRING as string
   );
   const sbReceiver = sbClient.createReceiver(queueName!!);
 
@@ -110,10 +110,10 @@ function validateReceiveRequest(context: Context, req: HttpRequest): boolean {
   const { query } = req;
   const { queueName } = query as Partial<ReceiveRequestQuery>;
 
-  if (!process.env.SERVICE_BUS_CONNECTION_STRING) {
+  if (!process.env.SERVICEBUS_CONNECTION_STRING) {
     const errorResponse = createErrorResponse(
       req,
-      "'SERVICE_BUS_CONNECTION_STRING' is missing from environment variables!"
+      "'SERVICEBUS_CONNECTION_STRING' is missing from environment variables!"
     );
     context.log(JSON.stringify(errorResponse, undefined, 2));
     context.res = errorResponse;
